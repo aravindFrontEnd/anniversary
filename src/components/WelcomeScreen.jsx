@@ -55,6 +55,11 @@ export default function WelcomeScreen({ onStart }) {
   if (!showTopics) {
     return (
       <div className="min-h-screen bg-[#1e3a8a] flex flex-col items-center justify-center p-4">
+          <img 
+          src="/logo.jpg" 
+          alt="Tech Millionaire Logo" 
+          className="mb-8 max-w-full h-auto"
+        />
         <h1 className="text-5xl font-bold text-white mb-12">Tech Millionaire</h1>
         <div className="w-full max-w-md">
           <form onSubmit={handleNameSubmit} className="space-y-6">
