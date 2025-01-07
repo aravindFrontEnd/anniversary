@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@keyframes correct-blink {
+  0%, 100% { background: linear-gradient(90deg, #1E4D8A 0%, #0D2B54 100%); }
+  50% { background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%); }
+}
+
+@keyframes wrong-blink {
+  0%, 100% { background: linear-gradient(90deg, #1E4D8A 0%, #0D2B54 100%); }
+  50% { background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%); }
+}
+
+.answer-correct {
+  animation: correct-blink 0.5s ease-in-out infinite;
+  border-color: #22c55e !important;
+}
+
+.answer-wrong {
+  animation: wrong-blink 0.5s ease-in-out infinite;
+  border-color: #ef4444 !important;
+}
+
+body {
+  margin: 0;
+  background-color: #000B1D;
+  color: white;
+  font-family: 'Arial', sans-serif;
+}
+
+.millionaire-gradient {
+  background: linear-gradient(135deg, #000B1D 0%, #0D2B54 100%);
+}
+
+.option-button {
+  @apply relative w-full p-4 mb-3 text-left text-white rounded-lg transition-all duration-300;
+  background: linear-gradient(90deg, #0D2B54 0%, #000B1D 100%);
+  border: 2px solid #1E4D8A;
+}
+
+.option-button:hover {
+  background: linear-gradient(90deg, #1E4D8A 0%, #0D2B54 100%);
+  transform: scale(1.02);
+}
+
+.option-button.selected {
+  background: linear-gradient(90deg, #FFD700 0%, #FFA500 100%);
+  color: #000B1D;
+  border-color: #FFD700;
+}
+
+.prize-level {
+  @apply p-2 mb-1 text-center rounded transition-colors;
+  background: rgba(13, 43, 84, 0.8);
+}
+
+.prize-level.current {
+  background: linear-gradient(90deg, #FFD700 0%, #FFA500 100%);
+  color: #000B1D;
+  font-weight: bold;
+}
