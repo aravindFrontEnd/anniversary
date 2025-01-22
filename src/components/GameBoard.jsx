@@ -72,7 +72,7 @@ const GameBoard = ({
        </div>
 
        <div className="bg-blue-800 rounded-xl shadow-lg mb-6 overflow-hidden">
-         <div className="p-6">
+         <div className="p-6  overflow-x-auto">
            {question.code ? (
              <CodeBlock code={question.code} />
            ) : (
