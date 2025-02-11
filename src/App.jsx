@@ -1,288 +1,363 @@
-// App.jsx
 import React, { useState, useEffect } from 'react';
-import useSound from 'use-sound';
-import ReactConfetti from 'react-confetti';
-import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction } from "./components/ui/alert-dialog";
-import WelcomeScreen from './components/WelcomeScreen';
-import GameBoard from './components/GameBoard';
-import { getQuestionsByTopic, PRIZE_LEVELS } from './data';
+import { Heart, ChevronLeft, ChevronRight, Moon, Sun } from 'lucide-react';
 
-// Import sounds
-import play from './sounds/background.mp3';
-import correct from './sounds/correct.mp3';
-import wrong from './sounds/wrong.mp3';
-import wait from './sounds/timer.mp3';
+const App = () => {
+  const [currentPage, setCurrentPage] = useState(0);
+  const [heartColor, setHeartColor] = useState('text-rose-400');
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
-export default function App() {
- const [gameState, setGameState] = useState('welcome');
- const [playerName, setPlayerName] = useState('');
- const [currentQuestion, setCurrentQuestion] = useState(0);
- const [timer, setTimer] = useState(30);
- const [selectedAnswer, setSelectedAnswer] = useState(null);
- const [showConfetti, setShowConfetti] = useState(false);
- const [questions, setQuestions] = useState([]);
- const [currentTopic, setCurrentTopic] = useState('javascript');
- const [lifelines, setLifelines] = useState({
-   fifty: true,
-   phone: true,
-   audience: true
- });
- const [isMuted, setIsMuted] = useState(false);
- const [showAlert, setShowAlert] = useState(false);
- const [alertContent, setAlertContent] = useState({ title: '', description: '' });
- const [availableOptions, setAvailableOptions] = useState([0, 1, 2, 3]);
- const [audienceHelp, setAudienceHelp] = useState(null);
- const [windowSize, setWindowSize] = useState({
-   width: window.innerWidth,
-   height: window.innerHeight,
- });
- 
- const [playBgMusic, { stop: stopBgMusic }] = useSound(play, { 
-   volume: 0.35,
-   loop: true 
- });
- const [playCorrect] = useSound(correct, { volume: 0.5 });
- const [playWrong] = useSound(wrong, { volume: 0.5 });
- const [playWait] = useSound(wait, { volume: 0.5 });
+  const colors = [
+    { text: 'text-rose-400', glow: '244, 63, 94' },
 
- useEffect(() => {
-   if (isMuted) {
-     stopBgMusic();
-   } else if (gameState === 'playing') {
-     playBgMusic();
-   }
- }, [isMuted, gameState, playBgMusic, stopBgMusic]);
 
- useEffect(() => {
-   const topicQuestions = getQuestionsByTopic(currentTopic);
-   setQuestions(shuffleArray(topicQuestions));
- }, [currentTopic]);
+    { text: 'text-pink-400', glow: '236, 72, 153' },
 
- useEffect(() => {
-   const handleResize = () => {
-     setWindowSize({
-       width: window.innerWidth,
-       height: window.innerHeight,
-     });
-   };
-   window.addEventListener('resize', handleResize);
-   return () => window.removeEventListener('resize', handleResize);
- }, []);
 
- useEffect(() => {
-   let interval;
-   if (gameState === 'playing' && timer > 0 && !selectedAnswer) {
-     interval = setInterval(() => {
-       setTimer(prev => {
-         if (prev <= 5 && prev > 0 && !isMuted) {
-           playWait();
-         }
-         return prev - 1;
-       });
-     }, 1000);
-   } else if (timer === 0) {
-     handleGameOver();
-   }
-   return () => clearInterval(interval);
- }, [timer, gameState, selectedAnswer, isMuted, playWait]);
+    { text: 'text-purple-400', glow: '192, 132, 252' },
 
- const shuffleArray = (array) => {
-   const shuffled = [...array];
-   for (let i = shuffled.length - 1; i > 0; i--) {
-     const j = Math.floor(Math.random() * (i + 1));
-     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-   }
-   return shuffled;
- };
 
- const handleStartGame = (name, topic) => {
-   setPlayerName(name);
-   setCurrentTopic(topic);
-   setGameState('playing');
-   setTimer(30);
-   const topicQuestions = getQuestionsByTopic(topic);
-   setQuestions(shuffleArray(topicQuestions));
-   resetGameState();
-   if (!isMuted) playBgMusic();
- };
+    { text: 'text-red-400', glow: '248, 113, 113' },
 
- const resetGameState = () => {
-   setCurrentQuestion(0);
-   setSelectedAnswer(null);
-   setShowConfetti(false);
-   setLifelines({ fifty: true, phone: true, audience: true });
-   setAvailableOptions([0, 1, 2, 3]);
-   setAudienceHelp(null);
- };
 
- const handleAnswer = (optionIndex) => {
-   setSelectedAnswer(optionIndex);
-   if (questions[currentQuestion].correct !== optionIndex) {
-    stopBgMusic(); 
-   }
-   
-   if (timer <= 0) {
-     handleGameOver();
-     return;
-   }
+    { text: 'text-fuchsia-400', glow: '232, 121, 249' },
 
-   setTimeout(() => {
-     if (questions[currentQuestion].correct === optionIndex) {
-       if (!isMuted) playCorrect();
-       if (currentQuestion === questions.length - 1) {
-         handleWinGame();
-       } else {
-         setTimeout(() => {
-           setCurrentQuestion(prev => prev + 1);
-           setTimer(30);
-           setSelectedAnswer(null);
-           setAvailableOptions([0, 1, 2, 3]);
-           setAudienceHelp(null);
-         }, 2000);
-       }
-     } else {
-       if (!isMuted) playWrong();
-       handleGameOver();
-     }
-   }, 3000);
- };
+  ];
 
- const handleWinGame = () => {
-   setGameState('won');
-   setShowAlert(true);
-   setShowConfetti(true);
-   setAlertContent({
-     title: '🎉 Congratulations! 🎉',
-     description: `${playerName}, you've won $${PRIZE_LEVELS[currentQuestion].toLocaleString()}!`
-   });
- };
 
- const handleGameOver = () => {
-   if (!isMuted) playWrong();
-   setGameState('lost');
-   setShowAlert(true);
-   setAlertContent({
-     title: 'Game Over!',
-     description: `Sorry ${playerName}, you lost! You won $${PRIZE_LEVELS[Math.max(0, currentQuestion - 1)].toLocaleString()}`
-   });
- };
+  const [currentColorIndex, setCurrentColorIndex] = useState(0);
 
- const handleLifeline = (type) => {
-   if (!lifelines[type]) return;
-   
-   setLifelines(prev => ({ ...prev, [type]: false }));
-   
-   switch(type) {
-     case 'fifty':
-       handleFiftyFifty();
-       break;
-     case 'phone':
-       handlePhoneFriend();
-       break;
-     case 'audience':
-       handleAskAudience();
-       break;
-     default:
-       break;
-   }
- };
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentColorIndex((prev) => (prev + 1) % colors.length);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
 
- const handleFiftyFifty = () => {
-   const correct = questions[currentQuestion].correct;
-   let remaining = [correct];
-   while (remaining.length < 2) {
-     const random = Math.floor(Math.random() * 4);
-     if (random !== correct && !remaining.includes(random)) {
-       remaining.push(random);
-     }
-   }
-   setAvailableOptions(remaining.sort());
- };
+  const memories = [
+    {
+      title: "Breaking the Ice at Papa's Place",
+      date: "November 20, 2022",
+      description: "Who knew a simple house visit would turn into the start of something special? Nervous smiles, awkward glances, and enough butterflies to start a sanctuary!",
+      image: "/papa_House.png"
+    },
+    {
+      title: "The Jan Veedu Adventure",
+      date: "December 4, 2022",
+      description: "Round two of family meetings - this time with double the fun and half the nervousness! They say home is where the heart is, well, found mine here!",
+      image: "/jaan_veedupng.png"
+    },
+    {
+      title: "Gatta Gusti - Our First Silver Screen Date",
+      date: "January 1, 2023",
+      description: "New Year's day spent watching Gatta Gusti. Who needs action movies when our hearts were doing all the stunts?",
+      image: "/gatt_gustipng.png"
+    },
+    {
+      title: "Avatar: Way of Water & Way to Your Heart",
+      date: "January 9, 2023",
+      description: "3D glasses on, Ibaco ice cream in hand, and you by my side - even Pandora couldn't compete with this perfect day!",
+      image: "/avatar.png"
+    },
+    {
+      title: "The Sweet Prelude",
+      date: "February 12, 2023",
+      description: "A cake so sweet, but not as sweet as what was about to come! The calm before the happiest storm.",
+      image: "/engagement_cake.png"
+    },
+    {
+      title: "The Day You Said 'Yes'!",
+      date: "February 12, 2023",
+      description: "Two years goneBy and still can't believe you agreed to be my partner in crime, adventure buddy, and full-time happiness manager!",
+      image: "/engagement.png"
+    }
+  ]
 
- const handlePhoneFriend = () => {
-   setShowAlert(true);
-   setAlertContent({
-     title: 'Phone a Friend',
-     description: `Your friend thinks the answer is ${
-       ['A', 'B', 'C', 'D'][questions[currentQuestion].correct]
-     }, but they're not entirely sure.`,
-     isLifeline: true
-   });
- };
+  const nextPage = () => {
+    setCurrentPage((prev) => (prev + 1) % memories.length);
+  };
 
- const handleAskAudience = () => {
-   const correctAnswer = questions[currentQuestion].correct;
-   const audienceVotes = Array(4).fill(0).map((_, index) => {
-     if (index === correctAnswer) {
-       return Math.floor(Math.random() * 30) + 40;
-     }
-     return Math.floor(Math.random() * 20);
-   });
-   const total = audienceVotes.reduce((a, b) => a + b);
-   const percentages = audienceVotes.map(votes => Math.round((votes / total) * 100));
-   setAudienceHelp(percentages);
- };
+  const prevPage = () => {
+    setCurrentPage((prev) => (prev - 1 + memories.length) % memories.length);
+  };
 
- const handleCloseAlert = () => {
-   setShowAlert(false);
-   if (gameState === 'won' || gameState === 'lost') {
-     window.location.reload();
-   }
- };
+  return (
+    <div className={isDarkMode ? 'dark' : ''}>
+      <div className={`min-h-screen relative ${isDarkMode ? 'bg-black' : 'bg-gray-50'} transition-colors duration-500`}>
+      <div className="w-11/12 sm:w-8/12 md:w-5/12 lg:w-4/12 max-w-[500px] mx-auto px-4 py-6 sm:px-6 sm:py-8 md:px-8">
+          <div className="flex justify-end mb-4">
+            <button
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              className="p-2 rounded-full hover:scale-110 transition-all duration-300"
+            >
+              {isDarkMode ? (
+                <Sun
+                  className="text-yellow-400"
+                  size={24}
+                  style={{
+                    filter: 'drop-shadow(0 0 8px rgba(250,204,21,0.8))'
+                  }}
+                />
+              ) : (
+                <Moon className="text-gray-600" size={24} />
+              )}
+            </button>
+          </div>
 
- return (
-   <div className="relative">
-     {showConfetti && gameState === 'won' && (
-       <ReactConfetti
-         width={windowSize.width}
-         height={windowSize.height}
-         recycle={false}
-         numberOfPieces={1000}
-         gravity={0.2}
-       />
-     )}
+          <div className="text-center mb-8">
+            <div className="relative inline-block">
+              <h1
+                className={`text-3xl sm:text-4xl font-bold mb-4 transition-all duration-300 ${isDarkMode
+                  ? 'text-rose-400'
+                  : 'text-rose-600'
+                  }`}
+                style={{
+                  textShadow: isDarkMode
+                    ? '0 0 10px rgba(244,63,94,0.5), 0 0 20px rgba(244,63,94,0.3), 0 0 30px rgba(244,63,94,0.2)'
+                    : 'none'
+                }}
+              >
+                Just Us
+              </h1>
+            </div>
+            <div className="flex justify-center items-center gap-2">
+              <Heart
+                className={`${colors[currentColorIndex].text} transition-all duration-500`}
+                size={24}
+                style={{
+                  filter: isDarkMode ? `drop-shadow(0 0 8px rgba(${colors[currentColorIndex].glow}, 0.8))` : 'none'
+                }}
+              />
+              <span
+                className={`transition-colors duration-300 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'
+                  }`}
+                style={{
+                  textShadow: isDarkMode ? '0 0 10px rgba(255,255,255,0.5)' : 'none'
+                }}
+              >
+                Two Years of Forever
+              </span>
+              <Heart
+                className={`${colors[currentColorIndex].text} transition-all duration-500`}
+                size={24}
+                style={{
+                  filter: isDarkMode ? `drop-shadow(0 0 8px rgba(${colors[currentColorIndex].glow}, 0.8))` : 'none'
+                }}
+              />
+            </div>
+          </div>
 
-     {gameState === 'welcome' ? (
-       <WelcomeScreen onStart={handleStartGame} />
-     ) : (
-       <GameBoard
-         question={questions[currentQuestion]}
-         timer={timer}
-         prizeMoney={PRIZE_LEVELS[currentQuestion]}
-         onAnswer={handleAnswer}
-         selectedAnswer={selectedAnswer}
-         lifelines={lifelines}
-         onUseLifeline={handleLifeline}
-         isMuted={isMuted}
-         onToggleMute={() => setIsMuted(!isMuted)}
-         availableOptions={availableOptions}
-         audienceHelp={audienceHelp}
-         currentQuestion={currentQuestion}
-         prizeLevels={PRIZE_LEVELS}
-         topic={currentTopic}
-       />
-     )}
+          <div className="relative group">
+            <div
+              className={`rounded-lg overflow-hidden shadow-lg transition-all duration-500 ${isDarkMode
+                ? 'bg-gray-900 shadow-[0_0_20px_rgba(244,63,94,0.2)] hover:shadow-[0_0_30px_rgba(244,63,94,0.4)]'
+                : 'bg-white hover:shadow-xl'
+                }`}
+            >
+              <div className="relative aspect-[4/3] overflow-hidden">
+                <img
+                  src={memories[currentPage].image}
+                  alt={memories[currentPage].title}
+                  className="absolute inset-0 w-full h-full object-contain object-center transition-transform duration-700 hover:scale-105 bg-black/5"
+                />
+                <div className={`absolute inset-0 ${isDarkMode ? 'bg-black/40' : 'bg-black/10'}`}></div>
+              </div>
 
-     <AlertDialog open={showAlert}>
-       <AlertDialogContent className="bg-gradient-to-b from-blue-900 to-blue-950 border-2 border-yellow-500">
-         <AlertDialogHeader>
-           <AlertDialogTitle className="flex items-center gap-2 text-white">
-             {alertContent.title}
-           </AlertDialogTitle>
-           <AlertDialogDescription className="text-gray-200">
-             {alertContent.description}
-           </AlertDialogDescription>
-         </AlertDialogHeader>
-         <AlertDialogFooter>
-           <AlertDialogAction 
-             onClick={handleCloseAlert}
-             className="bg-yellow-500 hover:bg-yellow-400 text-blue-900 font-bold"
-           >
-             {alertContent.isLifeline ? 'OK' : 'Play Again'}
-           </AlertDialogAction>
-         </AlertDialogFooter>
-       </AlertDialogContent>
-     </AlertDialog>
-   </div>
- );
-}
+              <div className={`p-4 sm:p-6 ${isDarkMode
+                ? 'bg-gradient-to-b from-gray-900 to-black'
+                : 'bg-white'
+                }`}>
+                <h2
+                  className={`text-2xl sm:text-3xl font-semibold mb-2 transition-all duration-300 ${isDarkMode
+                    ? 'text-white hover:text-rose-400'
+                    : 'text-gray-800 hover:text-rose-600'
+                    }`}
+                  style={{
+                    textShadow: isDarkMode ? '0 0 10px rgba(255,255,255,0.3)' : 'none'
+                  }}
+                >
+                  {memories[currentPage].title}
+                </h2>
+                <p
+                  className={`${colors[currentColorIndex].text} mb-4 transition-all duration-500`}
+                  style={{
+                    textShadow: isDarkMode ? `0 0 10px rgba(${colors[currentColorIndex].glow}, 0.8)` : 'none'
+                  }}
+                >
+                  {memories[currentPage].date}
+                </p>
+                <p
+                  className={`text-base sm:text-lg transition-colors duration-300 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'
+                    }`}
+                  style={{
+                    textShadow: isDarkMode ? '0 0 10px rgba(255,255,255,0.2)' : 'none'
+                  }}
+                >
+                  {memories[currentPage].description}
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={prevPage}
+              className={`absolute left-4 top-[40%] -translate-y-[40%] p-2 rounded-full shadow-lg transition-all duration-300 hover:scale-110 ${isDarkMode
+                ? 'bg-black/50 hover:bg-rose-900/30 backdrop-blur-sm'
+                : 'bg-white hover:bg-gray-100'
+                }`}
+            >
+              <ChevronLeft size={24} className={colors[currentColorIndex].text} />
+            </button>
+
+            <button
+              onClick={nextPage}
+              className={`absolute right-4 top-[40%] -translate-y-[40%] p-2 rounded-full shadow-lg transition-all duration-300 hover:scale-110 ${isDarkMode
+                ? 'bg-black/50 hover:bg-rose-900/30 backdrop-blur-sm'
+                : 'bg-white hover:bg-gray-100'
+                }`}
+            >
+              <ChevronRight size={24} className={colors[currentColorIndex].text} />
+            </button>
+          </div>
+
+          <div className="flex justify-center mt-6 gap-2">
+            {memories.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentPage(index)}
+                className={`w-3 h-3 rounded-full transition-all duration-300 hover:scale-125 ${currentPage === index
+                  ? `${colors[currentColorIndex].text?.replace('text', 'bg')}`
+                  : isDarkMode ? 'bg-gray-700' : 'bg-gray-300'
+                  }`}
+                style={{
+                  boxShadow: currentPage === index && isDarkMode
+                    ? `0 0 10px rgba(${colors[currentColorIndex].glow}, 0.8)`
+                    : 'none'
+                }}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div className="fixed right-4 top-1/3 -translate-y-1/2 sm:right-6 flex flex-col items-center gap-2 -rotate-90 origin-right">
+          <div className="relative">
+            <div
+              className={`flex items-center gap-2 whitespace-nowrap ${isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                }`}
+            >
+              <span className="text-xs sm:text-sm">Made with</span>
+              <Heart
+                className={`${colors[currentColorIndex].text} inline-block transition-all duration-500`}
+                size={14}
+                style={{
+                  filter: isDarkMode ? `drop-shadow(0 0 8px rgba(${colors[currentColorIndex].glow}, 0.8))` : 'none'
+                }}
+              />
+              <span
+                className={`text-xs sm:text-sm font-medium ${isDarkMode
+                  ? 'text-rose-400 drop-shadow-[0_0_8px_rgba(244,63,94,0.5)]'
+                  : 'text-rose-600'
+                  }`}
+              >
+                by Preevind
+              </span>
+            </div>
+            <svg
+              className="absolute -bottom-2 left-0 w-full"
+              viewBox="0 0 120 6"
+              preserveAspectRatio="none"
+            >
+              <path
+                d="M 0 3 Q 30 6 60 3 Q 90 0 120 3"
+                fill="none"
+                strokeWidth="1.5"
+                className="animate-[dash_2s_linear_infinite]"
+                style={{
+                  stroke: 'url(#rainbowLine)',
+                  strokeDasharray: '125',
+                  strokeDashoffset: '125',
+                  animation: 'dash 2s linear infinite'
+                }}
+              />
+              <defs>
+                <linearGradient id="rainbowLine" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#9400D3">
+                    <animate
+                      attributeName="offset"
+                      values="0;1;0"
+                      dur="4s"
+                      repeatCount="indefinite"
+                    />
+                  </stop>
+                  <stop offset="14.3%" stopColor="#4B0082">
+                    <animate
+                      attributeName="offset"
+                      values="0.143;1.143;0.143"
+                      dur="4s"
+                      repeatCount="indefinite"
+                    />
+                  </stop>
+                  <stop offset="28.6%" stopColor="#0000FF">
+                    <animate
+                      attributeName="offset"
+                      values="0.286;1.286;0.286"
+                      dur="4s"
+                      repeatCount="indefinite"
+                    />
+                  </stop>
+                  <stop offset="42.9%" stopColor="#00FF00">
+                    <animate
+                      attributeName="offset"
+                      values="0.429;1.429;0.429"
+                      dur="4s"
+                      repeatCount="indefinite"
+                    />
+                  </stop>
+                  <stop offset="57.2%" stopColor="#FFFF00">
+                    <animate
+                      attributeName="offset"
+                      values="0.572;1.572;0.572"
+                      dur="4s"
+                      repeatCount="indefinite"
+                    />
+                  </stop>
+                  <stop offset="71.5%" stopColor="#FF7F00">
+                    <animate
+                      attributeName="offset"
+                      values="0.715;1.715;0.715"
+                      dur="4s"
+                      repeatCount="indefinite"
+                    />
+                  </stop>
+                  <stop offset="85.8%" stopColor="#FF0000">
+                    <animate
+                      attributeName="offset"
+                      values="0.858;1.858;0.858"
+                      dur="4s"
+                      repeatCount="indefinite"
+                    />
+                  </stop>
+                  <stop offset="100%" stopColor="#9400D3">
+                    <animate
+                      attributeName="offset"
+                      values="1;2;1"
+                      dur="4s"
+                      repeatCount="indefinite"
+                    />
+                  </stop>
+                </linearGradient>
+              </defs>
+            </svg>
+            <style jsx>{`
+              @keyframes dash {
+                to {
+                  stroke-dashoffset: 0;
+                }
+              }
+            `}</style>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default App;
