@@ -4,7 +4,7 @@ import { Heart, ChevronLeft, ChevronRight, Moon, Sun } from 'lucide-react';
 const App = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [heartColor, setHeartColor] = useState('text-rose-400');
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
 
   const colors = [
     { text: 'text-rose-400', glow: '244, 63, 94' },
@@ -22,7 +22,44 @@ const App = () => {
     { text: 'text-fuchsia-400', glow: '232, 121, 249' },
 
   ];
+  const ImageDoodles = () => {
+   
+    const generateHearts = () => {
+      const hearts = [];
+      for (let i = 0; i < 50; i++) {  
+        const x = Math.random() * 100; 
+        const y = Math.random() * 100;  
+        const scale = 0.5 + Math.random() * 0.5;  
+        const rotate = Math.random() * 360; 
+        const colorIndex = Math.floor(Math.random() * colors.length); 
 
+        hearts.push(
+          <path
+            key={i}
+            d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+            fill="currentColor"
+            className={`${colors[colorIndex].text} opacity-60 transform-gpu transition-all duration-500`}
+            style={{
+              transform: `translate(${x}%, ${y}%) scale(${scale}) rotate(${rotate}deg)`,
+              filter: isDarkMode
+                ? `drop-shadow(0 0 4px rgba(${colors[colorIndex].glow}, 0.8)) 
+                   drop-shadow(0 0 8px rgba(${colors[colorIndex].glow}, 0.6))`
+                : 'none'
+            }}
+          />
+        );
+      }
+      return hearts;
+    };
+
+    return (
+      <div className="absolute inset-0 pointer-events-none">
+        <svg className="absolute top-0 left-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+          {generateHearts()}
+        </svg>
+      </div>
+    );
+  };
 
   const [currentColorIndex, setCurrentColorIndex] = useState(0);
 
@@ -41,7 +78,7 @@ const App = () => {
       image: "/papa_House.png"
     },
     {
-      title: "The Jan Veedu Adventure",
+      title: "Jaan Veedu Adventure",
       date: "December 4, 2022",
       description: "Round two of family meetings - this time with double the fun and half the nervousness! They say home is where the heart is, well, found mine here!",
       image: "/jaan_veedupng.png"
@@ -83,7 +120,7 @@ const App = () => {
   return (
     <div className={isDarkMode ? 'dark' : ''}>
       <div className={`min-h-screen relative ${isDarkMode ? 'bg-black' : 'bg-gray-50'} transition-colors duration-500`}>
-      <div className="w-11/12 sm:w-8/12 md:w-5/12 lg:w-4/12 max-w-[500px] mx-auto px-4 py-6 sm:px-6 sm:py-8 md:px-8">
+        <div className="w-11/12 sm:w-8/12 md:w-5/12 lg:w-4/12 max-w-[500px] mx-auto px-4 py-6 sm:px-6 sm:py-8 md:px-8">
           <div className="flex justify-end mb-4">
             <button
               onClick={() => setIsDarkMode(!isDarkMode)}
@@ -154,6 +191,7 @@ const App = () => {
                 }`}
             >
               <div className="relative aspect-[4/3] overflow-hidden">
+                <ImageDoodles />
                 <img
                   src={memories[currentPage].image}
                   alt={memories[currentPage].title}
